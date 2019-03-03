@@ -31,122 +31,151 @@ public class BoardController {
 	
 	@RequestMapping("/home")
 	public String boardList(HttpServletRequest request,Model model) throws Exception{
-		HttpSession session = request.getSession();
-		
-		Integer countAll = 0;
-		int curpageno=1;
-		int maxpost=10;
-		PageVO pageVO=new PageVO(curpageno,maxpost);
-		
-		//세션의 페이지 정보 확인
-		if(session.getAttribute("pages")!=null) {
-			pageVO=(PageVO) session.getAttribute("pages");
-			curpageno = pageVO.getCurPageno();
+		try {
+			HttpSession session = request.getSession();
 			
+			Integer countAll = 0;
+			int curpageno=1;
+			int maxpost=10;
+			PageVO pageVO=new PageVO(curpageno,maxpost);
+			
+			//세션의 페이지 정보 확인
+			if(session.getAttribute("pages")!=null) {
+				pageVO=(PageVO) session.getAttribute("pages");
+				curpageno = pageVO.getCurPageno();
+				
+			}
+			if(request.getParameter("pages") != null) {
+				curpageno = Integer.parseInt(request.getParameter("pages"));
+				pageVO=new PageVO(curpageno,maxpost);
+			}
+			
+			countAll = (int) boardRepo.getBoardSize();
+			
+			List<BoardVO> list = new ArrayList<>();
+			list = boardRepo.getBoardList(curpageno);
+			
+			pageVO.setCountAll(countAll);
+			pageVO.makePage();
+			
+			model.addAttribute("list",list);
+			session.setAttribute("pages", pageVO);
+			
+			return "home";
+		}catch(Exception e) {
+			System.out.println("error : "+e.getMessage());
+			return "error";
 		}
-		if(request.getParameter("pages") != null) {
-			System.out.println("request true");
-			curpageno = Integer.parseInt(request.getParameter("pages"));
-			pageVO=new PageVO(curpageno,maxpost);
-		}
-		
-		countAll = (int) boardRepo.getBoardSize();
-		
-		List<BoardVO> list = new ArrayList<>();
-		list = boardRepo.getBoardList(curpageno);
-		
-		pageVO.setCountAll(countAll);
-		pageVO.makePage();
-		
-		model.addAttribute("list",list);
-		session.setAttribute("pages", pageVO);
-		
-		return "home";
 	}
 	
 	@RequestMapping("/detail/{bbs_no}")
 	public String boardDetail(@PathVariable int bbs_no,HttpServletRequest request,Model model) throws Exception{
-		
-		BoardVO boardVO = new BoardVO();
-		boardVO = boardRepo.getBoard(bbs_no);
-		System.out.println(boardVO.getBbs_tit());
-		model.addAttribute("boardVO",boardVO);
-		
-		return "detail";
+		try {
+			BoardVO boardVO = new BoardVO();
+			boardVO = boardRepo.getBoard(bbs_no);
+			model.addAttribute("boardVO",boardVO);
+			
+			return "detail";
+		}catch(Exception e) {
+			System.out.println("error : "+e.getMessage());
+			return "error";
+		}
 	}
 	//200개 testdata 삽입 비밀번호 abcd
 	@RequestMapping("/setTestData")
-	public String setTestData() {
-		
-		int i = 1;
-		int bbs_no = boardRepo.getLastBoradNo();
-		while(i<201) {
-			
-			BoardVO boardVO = new BoardVO();
-			boardVO.setBbs_detail("hello test text "+bbs_no+i);
-			boardVO.setBbs_tit("hello test title "+bbs_no+i);
-			boardVO.setRegist_nicknm("nickname "+bbs_no+i);
-			boardVO.setRegist_dt(curTime.format(time));
-			boardVO.setUpdate_dt(curTime.format(time));
-			boardVO.setBbs_no(bbs_no+i);
-			boardVO.setBbs_pwd("abcd");
-			boardRepo.addBoard(boardVO);
-			i++;
-					
+	public String setTestData() throws Exception{
+		try {
+			int i = 1;
+			int bbs_no = boardRepo.getLastBoradNo();
+			while(i<201) {
+				
+				BoardVO boardVO = new BoardVO();
+				boardVO.setBbs_detail("hello test text "+bbs_no+i);
+				boardVO.setBbs_tit("hello test title "+bbs_no+i);
+				boardVO.setRegist_nicknm("nickname "+bbs_no+i);
+				boardVO.setRegist_dt(curTime.format(time));
+				boardVO.setUpdate_dt(curTime.format(time));
+				boardVO.setBbs_no(bbs_no+i);
+				boardVO.setBbs_pwd("abcd");
+				boardRepo.insertBoard(boardVO);
+				i++;
+						
+			}
+			return "redirect:/home";
+		}catch(Exception e) {
+			return "error";
 		}
-		return "redirect:/home";
 	}
 	@RequestMapping("/insert")
-	public String insertBoard() {	
-		return "insert";
+	public String insertBoard() throws Exception{
+		try {
+			return "insert";
+		}catch(Exception e) {
+			return "error";
+		}
 	}
 	@RequestMapping("/insertProc")
-	public String insertProcBoard(HttpServletRequest request) {	
-	
-		BoardVO boardVO=new BoardVO();
-		
-		boardVO.setBbs_tit(request.getParameter("bbs_tit"));
-		boardVO.setBbs_detail(request.getParameter("bbs_detail"));
-		boardVO.setRegist_nicknm(request.getParameter("regist_nicknm"));
-		boardVO.setRegist_dt(curTime.format(time));
-		boardVO.setUpdate_dt(curTime.format(time));
-		boardVO.setBbs_no(boardRepo.getLastBoradNo()+1);
-		boardVO.setBbs_pwd(request.getParameter("bbs_pwd"));
-		
-		boardRepo.addBoard(boardVO);
-		
-		return "redirect:/detail/"+boardVO.getBbs_no();
+	public String insertProcBoard(HttpServletRequest request) throws Exception{	
+		try {
+			BoardVO boardVO=new BoardVO();
+			
+			boardVO.setBbs_tit(request.getParameter("bbs_tit"));
+			boardVO.setBbs_detail(request.getParameter("bbs_detail"));
+			boardVO.setRegist_nicknm(request.getParameter("regist_nicknm"));
+			boardVO.setRegist_dt(curTime.format(time));
+			boardVO.setUpdate_dt(curTime.format(time));
+			boardVO.setBbs_no(boardRepo.getLastBoradNo()+1);
+			boardVO.setBbs_pwd(request.getParameter("bbs_pwd"));
+			
+			if(request.getParameter("regist_nicknm").equals("")||request.getParameter("bbs_tit").equals(""))
+				throw new Exception();
+			boardRepo.insertBoard(boardVO);
+			
+			return "redirect:/detail/"+boardVO.getBbs_no();
+		}catch(Exception e) {
+			return "error";
+		}
 	}
 	@RequestMapping("/update/{bbs_no}")
-	public String updateBoard(@PathVariable int bbs_no,HttpServletRequest request,Model model) {
-		
-		BoardVO boardVO = new BoardVO();
-		boardVO = boardRepo.getBoard(bbs_no);
-		model.addAttribute("boardVO", boardVO);
-		
-		return "update";
+	public String updateBoard(@PathVariable int bbs_no,HttpServletRequest request,Model model) throws Exception{
+		try {
+			BoardVO boardVO = new BoardVO();
+			boardVO = boardRepo.getBoard(bbs_no);
+			model.addAttribute("boardVO", boardVO);
+			
+			return "update";
+		}catch(Exception e) {
+			return "error";
+		}
 	}
+	
 	@RequestMapping("/updateProc")
-	public String updateProcBoard(HttpServletRequest request) {
-		
-		BoardVO boardVO = new BoardVO();
-		boardVO.setBbs_tit(request.getParameter("bbs_tit"));
-		boardVO.setBbs_detail(request.getParameter("bbs_detail"));
-		boardVO.setBbs_no(Integer.parseInt(request.getParameter("bbs_no")));
-		boardVO.setRegist_dt(request.getParameter("regist_dt"));
-		boardVO.setRegist_nicknm(request.getParameter("regist_nicknm"));
-		boardVO.setBbs_pwd(request.getParameter("bbs_pwd"));
-		boardVO.setUpdate_dt(curTime.format(time));
-		
-		boardRepo.updateBoard(boardVO);
-		
-		return "redirect:/detail/"+boardVO.getBbs_no();
+	public String updateProcBoard(HttpServletRequest request) throws Exception{
+		try {
+			BoardVO boardVO = new BoardVO();
+			boardVO.setBbs_tit(request.getParameter("bbs_tit"));
+			boardVO.setBbs_detail(request.getParameter("bbs_detail"));
+			boardVO.setBbs_no(Integer.parseInt(request.getParameter("bbs_no")));
+			boardVO.setRegist_dt(request.getParameter("regist_dt"));
+			boardVO.setRegist_nicknm(request.getParameter("regist_nicknm"));
+			boardVO.setBbs_pwd(request.getParameter("bbs_pwd"));
+			boardVO.setUpdate_dt(curTime.format(time));
+			
+			boardRepo.updateBoard(boardVO);
+			
+			return "redirect:/detail/"+boardVO.getBbs_no();
+		} catch(Exception e) {
+			
+			return "error";
+		}
 	}
 	@RequestMapping("/delete/{bbs_no}")
-	public String deleteBoard(@PathVariable int bbs_no) {
-		
-		boardRepo.deleteBoard(bbs_no);
-		
-		return "redirect:/home";
+	public String deleteBoard(@PathVariable int bbs_no) throws Exception{
+		try {
+			boardRepo.deleteBoard(bbs_no);
+			return "redirect:/home";
+		}catch(Exception e) {
+			return "error";
+		}		
 	}
 }

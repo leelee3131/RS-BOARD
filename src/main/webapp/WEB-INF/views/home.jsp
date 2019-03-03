@@ -22,7 +22,7 @@
             <th width="10%">글번호</th>
             <th width="50%">제목</th>
             <th width="20%">작성자</th>
-            <th width="20%">작성날짜</th>
+            <th width="20%">최종수정날짜</th>
         </tr>
             <c:forEach var="l" items="${list}">
           	  <tr>

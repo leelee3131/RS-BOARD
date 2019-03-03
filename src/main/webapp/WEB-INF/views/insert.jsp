@@ -12,12 +12,12 @@
     <form action="/insertProc" name="insertForm" method="post">
       <div class="form-group">
         <label for="bbs_tit">제목</label>
-     	<input type="text" class="form-control" id="bbs_tit" name="bbs_tit">
+     	<input type="text" class="form-control" id="bbs_tit" name="bbs_tit" placeholder="필수 입력사항입니다.">
     
       </div>
       <div class="form-group">
         <label for="regist_nicknm">작성자</label>
-        <input type="text" class="form-control" id="regist_nicknm" name="regist_nicknm">
+        <input type="text" class="form-control" id="regist_nicknm" name="regist_nicknm" placeholder="필수 입력사항입니다.">
       </div>
       <div class="form-group">
         <label for="regist_nicknm">비밀번호</label>
