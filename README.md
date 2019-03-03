@@ -8,8 +8,7 @@ redis port : 6379<br>
 redis host : 127.0.0.1<br>
 <br>
 <br>
-spring boot app 으로 실행합니다.<br>
-
+git clone 또는 zip파일을 다운받은 후 압축을 풀어 eclipse 에 추가하고 spring boot app 으로 실행합니다.
 url : localhost:8080/home<br>
 테스트데이터 200개씩 insert가능합니다. (비밀번호 'abcd')
 
